@@ -5,7 +5,7 @@
 // ============================================================
 // GOOGLE AUTHENTICATION CONFIG & STATE
 // ============================================================
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
+const GOOGLE_CLIENT_ID = "1045524049714-fmdp6946umcdnda6tf026v8o3pp221e7.apps.googleusercontent.com";
 let isAuthenticated = false;
 let currentUser = null;
 
