@@ -1051,6 +1051,51 @@ body.dark-mode .alert-card {
     line-height: 1.6;
 }
 
+.auth-divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 4px 0;
+    color: #6b7280;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider::before {
+    margin-right: 12px;
+}
+
+.auth-divider::after {
+    margin-left: 12px;
+}
+
+.skip-auth-btn {
+    width: 100%;
+    justify-content: center;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    font-weight: 700;
+}
+
+.skip-auth-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--primary) !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
 .auth-help-text {
     font-size: 0.75rem !important;
     color: #6b7280 !important;

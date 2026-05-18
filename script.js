@@ -1639,6 +1639,18 @@ function updateBudgetPercentages() {
     alert("🎉 Successfully adjusted your custom target allocations!");
 }
 
+function skipAuth() {
+    currentUser = {
+        name: "Guest User",
+        email: "guest@emeraldcircle.io",
+        picture: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"
+    };
+    isAuthenticated = true;
+    localStorage.setItem("emeraldCircleSession", JSON.stringify(currentUser));
+    showAppDashboard();
+    updateAll();
+}
+
 // Initialized Core Listeners
 function init() {
     // 1. Inject client ID into Google markup dynamically if configured
@@ -1697,6 +1709,7 @@ function init() {
     document.getElementById("resetSampleBtn")?.addEventListener('click', resetToSampleData);
     document.getElementById("excelFileInput")?.addEventListener('change', handleFileUpload);
     document.getElementById("signOutBtn")?.addEventListener('click', handleSignOut);
+    document.getElementById("skipAuthBtn")?.addEventListener('click', skipAuth);
     
     document.getElementById("dailyFilterCategory")?.addEventListener('change', updateDailyTable);
     document.getElementById("dailyFilterType")?.addEventListener('change', updateDailyTable);
