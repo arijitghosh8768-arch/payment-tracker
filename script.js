@@ -2,6 +2,82 @@
 // EMERALD CIRCLE - DYNAMIC FINANCE ENGINE
 // ============================================================
 
+// ============================================================
+// GOOGLE AUTHENTICATION CONFIG & STATE
+// ============================================================
+const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
+let isAuthenticated = false;
+let currentUser = null;
+
+function parseJwt(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("Failed to parse JWT:", e);
+        return null;
+    }
+}
+
+window.handleCredentialResponse = (response) => {
+    const payload = parseJwt(response.credential);
+    if (!payload) return;
+    
+    currentUser = {
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture
+    };
+    isAuthenticated = true;
+    
+    // Save session state to LocalStorage
+    localStorage.setItem("emeraldCircleSession", JSON.stringify(currentUser));
+    
+    // Render the main dashboard and load data
+    showAppDashboard();
+    updateAll();
+};
+
+function showAppDashboard() {
+    document.getElementById("authOverlay").style.display = "none";
+    document.getElementById("appContainer").style.display = "block";
+    
+    const profileBlock = document.getElementById("userProfileBlock");
+    if (profileBlock) {
+        profileBlock.style.display = "flex";
+        document.getElementById("userAvatar").src = currentUser.picture || "";
+        document.getElementById("userName").innerText = currentUser.name || "";
+        document.getElementById("userEmail").innerText = currentUser.email || "";
+    }
+    
+    // Update newly visible icons
+    lucide.createIcons();
+}
+
+function handleSignOut() {
+    try {
+        if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+            google.accounts.id.disableAutoSelect();
+        }
+    } catch(e) {
+        console.warn("Google identity API is not loaded or ready.");
+    }
+    
+    isAuthenticated = false;
+    currentUser = null;
+    
+    // Clear the cached session
+    localStorage.removeItem("emeraldCircleSession");
+    
+    // Update the UI back to credentials layout
+    document.getElementById("authOverlay").style.display = "flex";
+    document.getElementById("appContainer").style.display = "none";
+    document.getElementById("userProfileBlock").style.display = "none";
+}
+
+
 // Clean Excel Transactions Data (Fixed typos and syntax errors)
 const EXCEL_TRANSACTIONS = [
     {date:"2026-01-01", description:"Uber late night - NYE", category:"Life Infrastructure", amount:450, paymentMode:"UPI", type:"Need"},
@@ -1457,9 +1533,31 @@ function setupThemeToggle() {
 
 // Initialized Core Listeners
 function init() {
-    loadFromLocal();
+    // 1. Inject client ID into Google markup dynamically if configured
+    const authDiv = document.getElementById("g_id_onload");
+    if (authDiv && GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID") {
+        authDiv.setAttribute("data-client_id", GOOGLE_CLIENT_ID);
+    }
+
+    // 2. Setup theme engine
     setupThemeToggle();
-    updateAll();
+
+    // 3. Try to restore an active Google login session
+    const savedSession = localStorage.getItem("emeraldCircleSession");
+    if (savedSession) {
+        try {
+            currentUser = JSON.parse(savedSession);
+            isAuthenticated = true;
+            showAppDashboard();
+            loadFromLocal();
+            updateAll();
+        } catch(e) {
+            localStorage.removeItem("emeraldCircleSession");
+            loadFromLocal();
+        }
+    } else {
+        loadFromLocal();
+    }
 
     // Tab buttons switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1473,7 +1571,7 @@ function init() {
 
             // Timeout allows the visual container to fully display before drawing Chart.js to avoid aspect ratio bugs
             setTimeout(() => {
-                updateAll();
+                if (isAuthenticated) updateAll();
             }, 80);
         });
     });
@@ -1488,6 +1586,7 @@ function init() {
     document.getElementById("exportExcelBtn")?.addEventListener('click', exportToExcel);
     document.getElementById("resetDataBtn")?.addEventListener('click', resetToDefaults);
     document.getElementById("excelFileInput")?.addEventListener('change', handleFileUpload);
+    document.getElementById("signOutBtn")?.addEventListener('click', handleSignOut);
     
     document.getElementById("dailyFilterCategory")?.addEventListener('change', updateDailyTable);
     document.getElementById("dailyFilterType")?.addEventListener('change', updateDailyTable);
