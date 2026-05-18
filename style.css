@@ -1141,3 +1141,59 @@ body.dark-mode .icon-btn.danger-outline {
     height: 14px;
 }
 
+.budget-percent-inputs {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--glass-border);
+}
+
+.budget-input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+    gap: 4px;
+}
+
+.budget-input-group label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.budget-input-group input {
+    width: 100%;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--bg-body);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: all var(--transition-fast) ease;
+}
+
+.budget-input-group input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+}
+
+.compact-btn {
+    height: 32px !important;
+    width: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: var(--radius-sm) !important;
+    flex-shrink: 0;
+}
+
+

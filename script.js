@@ -376,6 +376,7 @@ let appData = {
     salary: 50000,
     increaseRate: 10,
     weeklyLimit: 10000,
+    budget: { needs: 50, wants: 30, savings: 20 },
     categories: [
         { name: "Life Infrastructure", type: "Need" },
         { name: "Future Me", type: "Saving" },
@@ -402,6 +403,7 @@ function loadFromLocal() {
             if (parsed.salary) appData.salary = parsed.salary;
             if (parsed.increaseRate) appData.increaseRate = parsed.increaseRate;
             if (parsed.weeklyLimit) appData.weeklyLimit = parsed.weeklyLimit;
+            if (parsed.budget) appData.budget = parsed.budget;
             if (parsed.categories) appData.categories = parsed.categories;
             if (parsed.paymentModes) appData.paymentModes = parsed.paymentModes;
             if (parsed.transactions) appData.transactions = parsed.transactions;
@@ -563,8 +565,24 @@ function updateAll() {
 
 // --- SETUP SHEET ---
 function updateSetup() {
-    // 50:30:20 Pie Chart
-    drawPieDonutChart("setupBudgetChart", "pie", ["Needs", "Wants", "Savings"], [50, 30, 20], ["#ef4444", "#f59e0b", "#10b981"], false);
+    // 50:30:20 Pie Chart with custom targets
+    drawPieDonutChart("setupBudgetChart", "pie", ["Needs", "Wants", "Savings"], [appData.budget.needs, appData.budget.wants, appData.budget.savings], ["#ef4444", "#f59e0b", "#10b981"], false);
+
+    // Sync percentages legends on the UI
+    const needsLegend = document.getElementById("needsLegendPct");
+    if (needsLegend) needsLegend.innerText = appData.budget.needs;
+    const wantsLegend = document.getElementById("wantsLegendPct");
+    if (wantsLegend) wantsLegend.innerText = appData.budget.wants;
+    const savingsLegend = document.getElementById("savingsLegendPct");
+    if (savingsLegend) savingsLegend.innerText = appData.budget.savings;
+
+    // Sync percentages input values
+    const needsInput = document.getElementById("needsPercent");
+    if (needsInput) needsInput.value = appData.budget.needs;
+    const wantsInput = document.getElementById("wantsPercent");
+    if (wantsInput) wantsInput.value = appData.budget.wants;
+    const savingsInput = document.getElementById("savingsPercent");
+    if (savingsInput) savingsInput.value = appData.budget.savings;
 
     // Salary growth projection
     let currentSalary = appData.salary;
@@ -615,9 +633,9 @@ function updateSetup() {
             html += `<tr>
                 <td><strong>${2026 + i}</strong></td>
                 <td>₹${s.toLocaleString()}</td>
-                <td>₹${Math.floor(s * 0.5).toLocaleString()}</td>
-                <td>₹${Math.floor(s * 0.3).toLocaleString()}</td>
-                <td>₹${Math.floor(s * 0.2).toLocaleString()}</td>
+                <td>₹${Math.floor(s * appData.budget.needs / 100).toLocaleString()}</td>
+                <td>₹${Math.floor(s * appData.budget.wants / 100).toLocaleString()}</td>
+                <td>₹${Math.floor(s * appData.budget.savings / 100).toLocaleString()}</td>
             </tr>`;
             sal *= (1 + appData.increaseRate / 100);
         }
@@ -898,6 +916,19 @@ function updateWeeklySection() {
     }
 }
 
+function calculateBudgetScore(need, want, saving, total) {
+    if (!total || total <= 0) return 0;
+    const needRate = (need / total) * 100;
+    const wantRate = (want / total) * 100;
+    const savingsRate = (saving / total) * 100;
+
+    let savingsScore = appData.budget.savings > 0 ? Math.min(4, (savingsRate / appData.budget.savings) * 4) : 4;
+    let needsScore = appData.budget.needs > 0 ? (needRate <= appData.budget.needs ? 3 : Math.max(0, 3 - ((needRate - appData.budget.needs) / appData.budget.needs) * 3)) : 3;
+    let wantsScore = appData.budget.wants > 0 ? (wantRate <= appData.budget.wants ? 3 : Math.max(0, 3 - ((wantRate - appData.budget.wants) / appData.budget.wants) * 3)) : 3;
+
+    return Math.max(0, Math.min(10, Math.round(savingsScore + needsScore + wantsScore)));
+}
+
 // --- MONTHLY ANALYSIS SHEET ---
 function updateMonthlySection() {
     let monthlyAggregates = {};
@@ -917,10 +948,9 @@ function updateMonthlySection() {
     const activeMonthKey = new Date().toISOString().slice(0, 7); // YYYY-MM
     const currentMonth = monthlyAggregates[activeMonthKey] || { total: 0, need: 0, want: 0, saving: 0 };
     
-    // Calculate Scorecard statistics
+    // Calculate Scorecard statistics using custom targets
     const savingsRate = currentMonth.total > 0 ? (currentMonth.saving / currentMonth.total) * 100 : 0;
-    const score = currentMonth.total > 0 ? Math.floor(savingsRate / 10 * 3.5 + (currentMonth.need/currentMonth.total < 0.55 ? 3 : 0) + (currentMonth.want/currentMonth.total < 0.35 ? 3.5 : 0)) : 0;
-    const boundedScore = Math.max(0, Math.min(10, score));
+    const boundedScore = calculateBudgetScore(currentMonth.need, currentMonth.want, currentMonth.saving, currentMonth.total);
 
     // Render monthly stat cards
     document.getElementById("currentMonthVal").innerHTML = `₹${currentMonth.total.toLocaleString()}`;
@@ -954,8 +984,7 @@ function updateMonthlySection() {
     const tableData = Object.entries(monthlyAggregates).map(([mKey, data]) => {
         const date = new Date(mKey + "-02");
         const monthLabel = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-        const savRate = data.total > 0 ? (data.saving / data.total) * 100 : 0;
-        const mScore = Math.max(0, Math.min(10, Math.floor(savRate / 10 * 3.5 + (data.need/data.total < 0.55 ? 3 : 0) + (data.want/data.total < 0.35 ? 3.5 : 0))));
+        const mScore = calculateBudgetScore(data.need, data.want, data.saving, data.total);
         return {
             month: monthLabel,
             total: data.total,
@@ -1143,33 +1172,33 @@ function updateInsightsSection() {
         const wantPct = (wantSum / totalOutflow) * 100;
         const savingPct = (savingSum / totalOutflow) * 100;
 
-        if (needPct > 55) {
+        if (needPct > appData.budget.needs + 5) {
             recommendationsList.push({
                 type: "alert-danger",
                 icon: "shield-alert",
-                text: `<strong>Need Allocation High (${needPct.toFixed(0)}%):</strong> Fixed overheads are exceeding the 50% target threshold. Look into negotiating bills or downsizing Life Infrastructure.`
+                text: `<strong>Need Allocation High (${needPct.toFixed(0)}%):</strong> Fixed overheads are exceeding your custom target of ${appData.budget.needs}%. Look into negotiating bills or downsizing Life Infrastructure.`
             });
         }
 
-        if (wantPct > 35) {
+        if (wantPct > appData.budget.wants + 5) {
             recommendationsList.push({
                 type: "alert-warning",
                 icon: "alert-triangle",
-                text: `<strong>Lifestyle Spending Check (${wantPct.toFixed(0)}%):</strong> Wants are exceeding 30%. Consider applying spending delays on major credit card purchases in Lifestyle Enjoyment.`
+                text: `<strong>Lifestyle Spending Check (${wantPct.toFixed(0)}%):</strong> Wants are exceeding your custom target of ${appData.budget.wants}%. Consider applying spending delays on major credit card purchases in Lifestyle Enjoyment.`
             });
         }
 
-        if (savingPct < 20) {
+        if (savingPct < appData.budget.savings) {
             recommendationsList.push({
                 type: "alert-danger",
                 icon: "trending-down",
-                text: `<strong>Savings Rate Warning (${savingPct.toFixed(0)}%):</strong> You are currently falling short of the 20% savings gold standard. Set up automated SIP transfers immediately on payday.`
+                text: `<strong>Savings Rate Warning (${savingPct.toFixed(0)}%):</strong> You are currently falling short of your custom target of ${appData.budget.savings}%. Set up automated SIP transfers immediately on payday.`
             });
         } else {
             recommendationsList.push({
                 type: "alert-success",
                 icon: "check-circle",
-                text: `<strong>Savings Goal Met (${savingPct.toFixed(0)}%):</strong> Excellent compliance rating! Your Future Me account allocation meets the 50:30:20 criteria.`
+                text: `<strong>Savings Goal Met (${savingPct.toFixed(0)}%):</strong> Excellent compliance rating! Your Future Me account allocation meets or exceeds your custom target of ${appData.budget.savings}%.`
             });
         }
 
@@ -1251,7 +1280,10 @@ function exportToExcel() {
     const setupData = [
         { Parameter: "Annual Salary (₹)", Value: appData.salary },
         { Parameter: "Annual Growth Rate (%)", Value: appData.increaseRate },
-        { Parameter: "Weekly Spend Limit (₹)", Value: appData.weeklyLimit }
+        { Parameter: "Weekly Spend Limit (₹)", Value: appData.weeklyLimit },
+        { Parameter: "Needs Percent", Value: appData.budget.needs },
+        { Parameter: "Wants Percent", Value: appData.budget.wants },
+        { Parameter: "Savings Percent", Value: appData.budget.savings }
     ];
     
     // Add categories to Setup sheet rows for export/import
@@ -1376,6 +1408,12 @@ function handleFileUpload(e) {
                             appData.increaseRate = parseFloat(pVal) || 10;
                         } else if (pKey.includes("limit") || pKey.includes("weekly")) {
                             appData.weeklyLimit = parseFloat(pVal) || 10000;
+                        } else if (pKey.includes("needs percent") || pKey.includes("needs %") || pKey === "needs") {
+                            appData.budget.needs = parseFloat(pVal) || 50;
+                        } else if (pKey.includes("wants percent") || pKey.includes("wants %") || pKey === "wants") {
+                            appData.budget.wants = parseFloat(pVal) || 30;
+                        } else if (pKey.includes("savings percent") || pKey.includes("savings %") || pKey === "savings") {
+                            appData.budget.savings = parseFloat(pVal) || 20;
                         } else if (pKey.startsWith("category")) {
                             // Extract category index and property
                             const numMatch = pKey.match(/\d+/);
@@ -1468,6 +1506,7 @@ function removeAllData() {
         appData.salary = 50000;
         appData.increaseRate = 10;
         appData.weeklyLimit = 10000;
+        appData.budget = { needs: 50, wants: 30, savings: 20 };
         appData.categories = [
             { name: "Life Infrastructure", type: "Need" },
             { name: "Future Me", type: "Saving" },
@@ -1497,6 +1536,7 @@ function resetToSampleData() {
         appData.salary = 50000;
         appData.increaseRate = 10;
         appData.weeklyLimit = 10000;
+        appData.budget = { needs: 50, wants: 30, savings: 20 };
         appData.categories = [
             { name: "Life Infrastructure", type: "Need" },
             { name: "Future Me", type: "Saving" },
@@ -1568,6 +1608,37 @@ function setupThemeToggle() {
     });
 }
 
+function updateBudgetPercentages() {
+    const needsVal = parseFloat(document.getElementById("needsPercent")?.value);
+    const wantsVal = parseFloat(document.getElementById("wantsPercent")?.value);
+    const savingsVal = parseFloat(document.getElementById("savingsPercent")?.value);
+
+    if (isNaN(needsVal) || isNaN(wantsVal) || isNaN(savingsVal)) {
+        alert("⚠️ Please enter valid numeric percentage values.");
+        return;
+    }
+
+    const total = needsVal + wantsVal + savingsVal;
+    if (Math.abs(total - 100) > 0.01) {
+        alert(`⚠️ Budget percentages must add up to exactly 100%. Currently they sum to ${total}%.`);
+        // Revert inputs
+        document.getElementById("needsPercent").value = appData.budget.needs;
+        document.getElementById("wantsPercent").value = appData.budget.wants;
+        document.getElementById("savingsPercent").value = appData.budget.savings;
+        return;
+    }
+
+    appData.budget = {
+        needs: needsVal,
+        wants: wantsVal,
+        savings: savingsVal
+    };
+
+    saveToLocal();
+    updateAll();
+    alert("🎉 Successfully adjusted your custom target allocations!");
+}
+
 // Initialized Core Listeners
 function init() {
     // 1. Inject client ID into Google markup dynamically if configured
@@ -1614,6 +1685,7 @@ function init() {
     });
 
     // Control hooks
+    document.getElementById("updatePercentBtn")?.addEventListener('click', updateBudgetPercentages);
     document.getElementById("updatePlanBtn")?.addEventListener('click', updatePlanFromUI);
     document.getElementById("addExpenseBtn")?.addEventListener('click', addTransaction);
     
