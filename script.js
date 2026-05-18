@@ -1462,24 +1462,61 @@ function handleFileUpload(e) {
     reader.readAsArrayBuffer(file);
 }
 
-function resetToDefaults() {
-    if (confirm("Are you sure you want to clear your local ledger changes? This will restore original transactions list.")) {
-        appData = {
-            salary: 50000,
-            increaseRate: 10,
-            weeklyLimit: 10000,
-            categories: [
-                { name: "Life Infrastructure", type: "Need" },
-                { name: "Future Me", type: "Saving" },
-                { name: "Performance & Growth", type: "Need" },
-                { name: "Relationships & Generosity", type: "Want" },
-                { name: "Lifestyle Enjoyment", type: "Want" }
-            ],
-            paymentModes: ["Credit Card", "Debit Card", "UPI", "Cash", "Bank Transfer"],
-            transactions: JSON.parse(JSON.stringify(EXCEL_TRANSACTIONS))
-        };
+function removeAllData() {
+    if (confirm("🧹 Are you absolutely sure you want to remove ALL transactions and reset settings to default values? This will wipe your tracker clean.")) {
+        appData.transactions = [];
+        appData.salary = 50000;
+        appData.increaseRate = 10;
+        appData.weeklyLimit = 10000;
+        appData.categories = [
+            { name: "Life Infrastructure", type: "Need" },
+            { name: "Future Me", type: "Saving" },
+            { name: "Performance & Growth", type: "Need" },
+            { name: "Relationships & Generosity", type: "Want" },
+            { name: "Lifestyle Enjoyment", type: "Want" }
+        ];
+        appData.paymentModes = ["Credit Card", "Debit Card", "UPI", "Cash", "Bank Transfer"];
+
+        // Update settings inputs on the active UI
+        const salInput = document.getElementById("salaryInput");
+        if (salInput) salInput.value = appData.salary;
+        const incInput = document.getElementById("increaseRate");
+        if (incInput) incInput.value = appData.increaseRate;
+        const limInput = document.getElementById("weeklyLimitSetup");
+        if (limInput) limInput.value = appData.weeklyLimit;
+
         saveToLocal();
         updateAll();
+        alert("All transactions have been deleted and parameters reset to standard empty values.");
+    }
+}
+
+function resetToSampleData() {
+    if (confirm("🔄 Are you sure you want to clear your local ledger changes and restore the original 300+ sample database from your Excel template?")) {
+        appData.transactions = JSON.parse(JSON.stringify(EXCEL_TRANSACTIONS));
+        appData.salary = 50000;
+        appData.increaseRate = 10;
+        appData.weeklyLimit = 10000;
+        appData.categories = [
+            { name: "Life Infrastructure", type: "Need" },
+            { name: "Future Me", type: "Saving" },
+            { name: "Performance & Growth", type: "Need" },
+            { name: "Relationships & Generosity", type: "Want" },
+            { name: "Lifestyle Enjoyment", type: "Want" }
+        ];
+        appData.paymentModes = ["Credit Card", "Debit Card", "UPI", "Cash", "Bank Transfer"];
+
+        // Update settings inputs on the active UI
+        const salInput = document.getElementById("salaryInput");
+        if (salInput) salInput.value = appData.salary;
+        const incInput = document.getElementById("increaseRate");
+        if (incInput) incInput.value = appData.increaseRate;
+        const limInput = document.getElementById("weeklyLimitSetup");
+        if (limInput) limInput.value = appData.weeklyLimit;
+
+        saveToLocal();
+        updateAll();
+        alert("Success! The original sample database has been restored completely.");
     }
 }
 
@@ -1584,7 +1621,8 @@ function init() {
     document.getElementById("addPaymentBtn")?.addEventListener('click', addNewPaymentMode);
     
     document.getElementById("exportExcelBtn")?.addEventListener('click', exportToExcel);
-    document.getElementById("resetDataBtn")?.addEventListener('click', resetToDefaults);
+    document.getElementById("clearAllDataBtn")?.addEventListener('click', removeAllData);
+    document.getElementById("resetSampleBtn")?.addEventListener('click', resetToSampleData);
     document.getElementById("excelFileInput")?.addEventListener('change', handleFileUpload);
     document.getElementById("signOutBtn")?.addEventListener('click', handleSignOut);
     
