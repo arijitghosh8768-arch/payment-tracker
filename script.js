@@ -385,7 +385,19 @@ let appData = {
         { name: "Lifestyle Enjoyment", type: "Want" }
     ],
     paymentModes: ["Credit Card", "Debit Card", "UPI", "Cash", "Bank Transfer"],
-    transactions: JSON.parse(JSON.stringify(EXCEL_TRANSACTIONS))
+    transactions: JSON.parse(JSON.stringify(EXCEL_TRANSACTIONS)),
+    investments: [
+        { category: "Equity (Stocks)", name: "Reliance Industries Ltd.", units: 50, buyPrice: 2450.00, currentPrice: 2845.30 },
+        { category: "Equity (Stocks)", name: "Tata Consultancy Serv.", units: 40, buyPrice: 3620.00, currentPrice: 3987.60 },
+        { category: "Equity (Stocks)", name: "HDFC Bank Ltd.", units: 30, buyPrice: 1650.00, currentPrice: 1757.45 },
+        { category: "Equity (Stocks)", name: "Infosys Ltd.", units: 20, buyPrice: 1450.00, currentPrice: 1592.80 },
+        { category: "Equity (Stocks)", name: "Hindustan Unilever Ltd.", units: 15, buyPrice: 2480.00, currentPrice: 2616.20 },
+        { category: "Equity (Stocks)", name: "ITC Ltd.", units: 100, buyPrice: 440.00, currentPrice: 466.70 },
+        { category: "Mutual Fund", name: "Parag Parikh Flexi Cap Fund", units: 120, buyPrice: 45.00, currentPrice: 48.10 },
+        { category: "Debt (Bonds)", name: "SBI Corporate Bond Fund", units: 100, buyPrice: 53.00, currentPrice: 53.85 },
+        { category: "Gold (ETF)", name: "Nippon India Gold ETF", units: 25, buyPrice: 55.40, currentPrice: 62.30 },
+        { category: "Cash", name: "Liquid Cash / Emergency", units: 1, buyPrice: 25000.00, currentPrice: 25000.00 }
+    ]
 };
 
 // ============================================================
@@ -407,6 +419,7 @@ function loadFromLocal() {
             if (parsed.categories) appData.categories = parsed.categories;
             if (parsed.paymentModes) appData.paymentModes = parsed.paymentModes;
             if (parsed.transactions) appData.transactions = parsed.transactions;
+            if (parsed.investments) appData.investments = parsed.investments;
         } catch (e) {
             console.error("Local storage load failed. Restoring defaults.", e);
         }
@@ -560,6 +573,7 @@ function updateAll() {
     updateMonthlySection();
     updateCalendarHeatmap();
     updateInsightsSection();
+    updateInvestments();
     saveToLocal();
 }
 
@@ -1515,6 +1529,7 @@ function removeAllData() {
             { name: "Lifestyle Enjoyment", type: "Want" }
         ];
         appData.paymentModes = ["Credit Card", "Debit Card", "UPI", "Cash", "Bank Transfer"];
+        appData.investments = getDefaultInvestments();
 
         // Update settings inputs on the active UI
         const salInput = document.getElementById("salaryInput");
@@ -1714,6 +1729,271 @@ function init() {
     document.getElementById("dailyFilterCategory")?.addEventListener('change', updateDailyTable);
     document.getElementById("dailyFilterType")?.addEventListener('change', updateDailyTable);
     document.getElementById("calendarYearSelect")?.addEventListener('change', updateCalendarHeatmap);
+}
+
+// --- INVESTMENT TRACKER SECTION ---
+function updateInvestments() {
+    renderInvestmentsTable();
+}
+
+function getCategoryColor(category) {
+    switch (category) {
+        case "Equity (Stocks)": return "#10b981"; // green
+        case "Mutual Fund": return "#3b82f6"; // blue
+        case "Debt (Bonds)": return "#8b5cf6"; // purple
+        case "ETF": return "#06b6d4"; // cyan
+        case "REITs (Real Estate)": return "#b45309"; // amber/brown
+        case "Cryptocurrency": return "#ec4899"; // pink
+        case "Commodities": return "#eab308"; // yellow/gold
+        case "P2P Lending": return "#047857"; // dark green
+        case "National Pension System": return "#ea580c"; // orange
+        case "IPO": return "#6366f1"; // indigo
+        case "FD (Fixed Deposit)": return "#3b82f6"; // blue
+        case "Cash & Bank": return "#6b7280"; // gray
+        case "Emergency Fund": return "#ea580c"; // red-orange
+        case "Insurance": return "#14b8a6"; // teal
+        case "Other Assets": return "#4b5563"; // dark gray
+        default: return "#6b7280";
+    }
+}
+
+function getCategoryTypeBadge(category) {
+    let typeName = "Other";
+    let badgeClass = "badge-other";
+    
+    if (category === "Equity (Stocks)") {
+        typeName = "Equity";
+        badgeClass = "badge-equity";
+    } else if (category === "Mutual Fund") {
+        typeName = "Mutual Fund";
+        badgeClass = "badge-mutualfund";
+    } else if (category === "Debt (Bonds)") {
+        typeName = "Debt Fund";
+        badgeClass = "badge-debt";
+    } else if (category === "ETF") {
+        typeName = "ETF";
+        badgeClass = "badge-etf";
+    } else if (category === "REITs (Real Estate)") {
+        typeName = "REITs";
+        badgeClass = "badge-reit";
+    } else if (category === "Cryptocurrency") {
+        typeName = "Crypto";
+        badgeClass = "badge-crypto";
+    } else if (category === "Commodities") {
+        typeName = "Commodity";
+        badgeClass = "badge-commodity";
+    } else if (category === "P2P Lending") {
+        typeName = "P2P Lending";
+        badgeClass = "badge-p2p";
+    } else if (category === "National Pension System") {
+        typeName = "NPS";
+        badgeClass = "badge-nps";
+    } else if (category === "IPO") {
+        typeName = "IPO";
+        badgeClass = "badge-ipo";
+    } else if (category === "FD (Fixed Deposit)") {
+        typeName = "FD";
+        badgeClass = "badge-fd";
+    } else if (category === "Cash & Bank") {
+        typeName = "Cash & Bank";
+        badgeClass = "badge-cash";
+    } else if (category === "Emergency Fund") {
+        typeName = "Emergency Fund";
+        badgeClass = "badge-emergency";
+    } else if (category === "Insurance") {
+        typeName = "Insurance";
+        badgeClass = "badge-insurance";
+    } else if (category === "Other Assets") {
+        typeName = "Other Assets";
+        badgeClass = "badge-other";
+    }
+    
+    return `<span class="category-badge ${badgeClass}" style="font-weight: 700; font-size: 0.8rem; padding: 4px 8px; border-radius: var(--radius-sm); white-space: nowrap;">${typeName}</span>`;
+}
+
+function renderInvestmentsTable() {
+    const tbody = document.querySelector("#investmentsTable tbody");
+    if (!tbody) return;
+
+    if (!appData.investments || appData.investments.length === 0 || appData.investments[0].units === undefined) {
+        appData.investments = getDefaultInvestments();
+        saveToLocal();
+    }
+
+    const categories = [
+        "Equity (Stocks)",
+        "Mutual Fund",
+        "Debt (Bonds)",
+        "ETF",
+        "REITs (Real Estate)",
+        "Cryptocurrency",
+        "Commodities",
+        "P2P Lending",
+        "National Pension System",
+        "IPO",
+        "FD (Fixed Deposit)",
+        "Cash & Bank",
+        "Emergency Fund",
+        "Insurance",
+        "Other Assets"
+    ];
+
+    let totalCurrentValue = 0;
+    let totalInvestedAmount = 0;
+
+    appData.investments.forEach(inv => {
+        const u = parseFloat(inv.units) || 0;
+        const cp = parseFloat(inv.currentPrice) || 0;
+        const bp = parseFloat(inv.buyPrice) || 0;
+        totalCurrentValue += u * cp;
+        totalInvestedAmount += u * bp;
+    });
+
+    const totalReturnsRs = totalCurrentValue - totalInvestedAmount;
+    let overallWeightedReturns = 0;
+    let html = "";
+
+    appData.investments.forEach((inv, index) => {
+        const u = parseFloat(inv.units) || 0;
+        const bp = parseFloat(inv.buyPrice) || 0;
+        const cp = parseFloat(inv.currentPrice) || 0;
+
+        const currentValue = u * cp;
+        const investedAmount = u * bp;
+        const returnsRs = currentValue - investedAmount;
+        const returnsPct = investedAmount > 0 ? (returnsRs / investedAmount) * 100 : 0;
+        const share = totalCurrentValue > 0 ? (currentValue / totalCurrentValue) * 100 : 0;
+
+        overallWeightedReturns += returnsPct * (currentValue / (totalCurrentValue || 1));
+
+        const returnClass = returnsRs >= 0 ? "pos" : "neg";
+        const returnSign = returnsRs >= 0 ? "+" : "";
+
+        let optionsHtml = "";
+        categories.forEach(cat => {
+            const isSelected = inv.category === cat ? "selected" : "";
+            optionsHtml += `<option value="${cat}" ${isSelected}>${cat}</option>`;
+        });
+
+        html += `
+        <tr>
+            <td>
+                <select class="form-select inline-select" onchange="updateAssetField(${index}, 'category', this.value)" style="margin: 0; width: 100%; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); height: 36px; padding: 0 8px; font-weight:600;">
+                    ${optionsHtml}
+                </select>
+            </td>
+            <td>
+                <input type="text" class="form-control inline-input" value="${inv.name}" onchange="updateAssetField(${index}, 'name', this.value)" style="margin: 0; width: 100%; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); height: 36px; padding: 0 8px; font-weight:600;">
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                ${getCategoryTypeBadge(inv.category)}
+            </td>
+            <td>
+                <input type="number" class="form-control inline-input" value="${inv.units}" onchange="updateAssetField(${index}, 'units', parseFloat(this.value) || 0)" style="margin: 0; width: 100%; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); height: 36px; padding: 0 8px; font-weight:600; text-align: center;">
+            </td>
+            <td>
+                <input type="number" step="0.01" class="form-control inline-input" value="${inv.buyPrice}" onchange="updateAssetField(${index}, 'buyPrice', parseFloat(this.value) || 0)" style="margin: 0; width: 100%; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); height: 36px; padding: 0 8px; font-weight:600; text-align: right;">
+            </td>
+            <td>
+                <input type="number" step="0.01" class="form-control inline-input" value="${inv.currentPrice}" onchange="updateAssetField(${index}, 'currentPrice', parseFloat(this.value) || 0)" style="margin: 0; width: 100%; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); height: 36px; padding: 0 8px; font-weight:600; text-align: right;">
+            </td>
+            <td style="text-align: right; font-weight: 700; vertical-align: middle; padding-right: 12px;">
+                ₹${currentValue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2})}
+                <div class="progress-bar-container mini" style="height: 4px; width: 100%; background: var(--glass-border); border-radius: var(--radius-full); overflow: hidden; margin-top: 4px;">
+                    <div class="progress-bar-fill" style="width: ${share}%; background: ${getCategoryColor(inv.category)}; height: 100%;"></div>
+                </div>
+            </td>
+            <td style="text-align: right; font-weight: 600; vertical-align: middle; color: var(--dark-light); padding-right: 12px;">
+                ₹${investedAmount.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2})}
+            </td>
+            <td class="${returnClass}" style="text-align: right; font-weight: 700; vertical-align: middle; padding-right: 12px;">
+                ${returnSign}₹${Math.abs(returnsRs).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2})}
+            </td>
+            <td class="${returnClass}" style="text-align: right; font-weight: 700; vertical-align: middle; padding-right: 12px;">
+                ${returnSign}${returnsPct.toFixed(2)}%
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <span class="category-badge" style="background: rgba(16, 185, 129, 0.1); color: var(--primary-dark); font-weight: 700; font-size: 0.8rem; padding: 4px 8px; border-radius: var(--radius-sm); white-space: nowrap;">${share.toFixed(2)}%</span>
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <button class="delete-row-btn" onclick="deleteInvestmentAsset(${index})" title="Delete Asset" style="margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </td>
+        </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+    lucide.createIcons();
+
+    // Summary strip bindings
+    const totalPortfolioValCurr = document.querySelector(".total-portfolio-val-curr");
+    if (totalPortfolioValCurr) totalPortfolioValCurr.innerText = `₹${totalCurrentValue.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}`;
+
+    const totalInvestedAmountText = document.querySelector(".total-invested-amount");
+    if (totalInvestedAmountText) totalInvestedAmountText.innerText = `₹${totalInvestedAmount.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})}`;
+
+    const totalReturnsRsVal = document.querySelector(".total-returns-rs-val");
+    if (totalReturnsRsVal) {
+        const totalReturnsPct = totalInvestedAmount > 0 ? (totalReturnsRs / totalInvestedAmount) * 100 : 0;
+        const sign = totalReturnsRs >= 0 ? "+" : "";
+        totalReturnsRsVal.innerText = `${sign}₹${Math.abs(totalReturnsRs).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2})} (${sign}${totalReturnsPct.toFixed(2)}%)`;
+        totalReturnsRsVal.className = "total-returns-rs-val " + (totalReturnsRs >= 0 ? "pos" : "neg");
+    }
+
+    const totalReturnsVal = document.querySelector(".total-returns-val");
+    if (totalReturnsVal) {
+        const sign = overallWeightedReturns >= 0 ? "+" : "";
+        totalReturnsVal.innerText = `${sign}${overallWeightedReturns.toFixed(2)}%`;
+        totalReturnsVal.className = "total-returns-val " + (overallWeightedReturns >= 0 ? "pos" : "neg");
+    }
+}
+
+function updateAssetField(index, field, value) {
+    if (appData.investments[index]) {
+        appData.investments[index][field] = value;
+        saveToLocal();
+        updateAll();
+    }
+}
+
+function addInvestmentAsset() {
+    if (!appData.investments) {
+        appData.investments = [];
+    }
+    appData.investments.push({
+        category: "Equity (Stocks)",
+        name: "New Asset",
+        units: 0,
+        buyPrice: 0,
+        currentPrice: 0
+    });
+    saveToLocal();
+    updateAll();
+}
+
+function deleteInvestmentAsset(index) {
+    if (confirm("Are you sure you want to delete this asset?")) {
+        appData.investments.splice(index, 1);
+        saveToLocal();
+        updateAll();
+    }
+}
+
+function getDefaultInvestments() {
+    return [
+        { category: "Equity (Stocks)", name: "Reliance Industries Ltd.", units: 50, buyPrice: 2450.00, currentPrice: 2845.30 },
+        { category: "Equity (Stocks)", name: "Tata Consultancy Serv.", units: 40, buyPrice: 3620.00, currentPrice: 3987.60 },
+        { category: "Equity (Stocks)", name: "HDFC Bank Ltd.", units: 30, buyPrice: 1650.00, currentPrice: 1757.45 },
+        { category: "Equity (Stocks)", name: "Infosys Ltd.", units: 20, buyPrice: 1450.00, currentPrice: 1592.80 },
+        { category: "Equity (Stocks)", name: "Hindustan Unilever Ltd.", units: 15, buyPrice: 2480.00, currentPrice: 2616.20 },
+        { category: "Equity (Stocks)", name: "ITC Ltd.", units: 100, buyPrice: 440.00, currentPrice: 466.70 },
+        { category: "Mutual Fund", name: "Parag Parikh Flexi Cap Fund", units: 120, buyPrice: 45.00, currentPrice: 48.10 },
+        { category: "Debt (Bonds)", name: "SBI Corporate Bond Fund", units: 100, buyPrice: 53.00, currentPrice: 53.85 },
+        { category: "Gold (ETF)", name: "Nippon India Gold ETF", units: 25, buyPrice: 55.40, currentPrice: 62.30 },
+        { category: "Cash", name: "Liquid Cash / Emergency", units: 1, buyPrice: 25000.00, currentPrice: 25000.00 }
+    ];
 }
 
 window.onload = init;

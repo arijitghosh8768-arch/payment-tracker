@@ -1241,4 +1241,364 @@ body.dark-mode .icon-btn.danger-outline {
     flex-shrink: 0;
 }
 
+/* ==========================================================================
+   INVESTMENT TRACKER & LAYOUT
+   ========================================================================== */
 
+
+
+.investment-tracker-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tracker-header h2 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--glass-border);
+}
+
+.tracker-table-header {
+    display: flex;
+    align-items: center;
+    padding: 0 12px 12px 12px;
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.tracker-table-header .col-type { flex: 2; }
+.tracker-table-header .col-value { flex: 1.5; text-align: left; }
+.tracker-table-header .col-returns { flex: 0.8; text-align: right; }
+
+.tracker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.tracker-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.tracker-item:hover {
+    background: var(--bg-body);
+}
+
+.icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.icon-wrap svg {
+    width: 18px;
+    height: 18px;
+}
+
+.icon-wrap.bg-equity { background: var(--primary-light); }
+.icon-wrap.bg-mf { background: #f3e8ff; }
+.icon-wrap.bg-fd { background: #eff6ff; }
+.icon-wrap.bg-gold { background: #fef3c7; }
+.icon-wrap.bg-ppf { background: #ecfdf5; }
+.icon-wrap.bg-nps { background: #ffedd5; }
+.icon-wrap.bg-crypto { background: #fce7f3; }
+
+.item-meta {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.item-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.item-sub {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.item-value-col {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+}
+
+.item-amount {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.progress-bar-container.mini {
+    height: 4px;
+    margin-top: 6px;
+    width: 80%;
+    background: var(--glass-border);
+}
+
+.item-returns {
+    flex: 0.8;
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.item-returns.pos, .total-returns-val.pos { color: var(--primary-dark); }
+body.dark-mode .item-returns.pos, body.dark-mode .total-returns-val.pos { color: var(--primary); }
+
+.item-returns.neg, .total-returns-val.neg { color: var(--danger-dark); }
+body.dark-mode .item-returns.neg, body.dark-mode .total-returns-val.neg { color: var(--danger); }
+
+.tracker-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.tracker-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.total-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.total-right {
+    text-align: right;
+}
+
+.total-amount-val {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.total-returns-val {
+    font-size: 0.85rem;
+    font-weight: 800;
+    margin-top: 2px;
+}
+
+/* Edit Investments Form Layout */
+.edit-investments-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.edit-investment-row {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: var(--bg-body);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.edit-row-header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1.5px dashed var(--glass-border);
+    padding-bottom: 8px;
+}
+
+.edit-row-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--primary-dark);
+}
+body.dark-mode .edit-row-title {
+    color: var(--primary);
+}
+
+.edit-row-inputs {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 600px) {
+    .edit-row-inputs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Nested Asset Rows Styling */
+.edit-assets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.asset-item-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+    padding: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+}
+
+@media (max-width: 600px) {
+    .asset-item-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .asset-item-row .delete-row-btn {
+        margin-top: 0 !important;
+        align-self: flex-end;
+    }
+}
+
+/* Investment Ledger Type Badges */
+.badge-equity {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+.badge-mutualfund {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+.badge-debt {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+}
+.badge-etf {
+    background-color: rgba(6, 182, 212, 0.1);
+    color: #0891b2;
+}
+.badge-reit {
+    background-color: rgba(180, 83, 9, 0.1);
+    color: #b45309;
+}
+.badge-crypto {
+    background-color: rgba(236, 72, 153, 0.1);
+    color: #db2777;
+}
+.badge-commodity {
+    background-color: rgba(234, 179, 8, 0.1);
+    color: #ca8a04;
+}
+.badge-p2p {
+    background-color: rgba(4, 120, 87, 0.1);
+    color: #047857;
+}
+.badge-nps {
+    background-color: rgba(234, 88, 12, 0.1);
+    color: #c2410c;
+}
+.badge-ipo {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: #4f46e5;
+}
+.badge-fd {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+}
+.badge-cash {
+    background-color: rgba(107, 114, 128, 0.1);
+    color: #4b5563;
+}
+.badge-emergency {
+    background-color: rgba(234, 88, 12, 0.1);
+    color: #c2410c;
+}
+.badge-insurance {
+    background-color: rgba(20, 184, 166, 0.1);
+    color: #0d9488;
+}
+.badge-other {
+    background-color: rgba(75, 85, 99, 0.1);
+    color: #374151;
+}
+body.dark-mode .badge-equity {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+body.dark-mode .badge-mutualfund {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+body.dark-mode .badge-debt {
+    background-color: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
+body.dark-mode .badge-etf {
+    background-color: rgba(6, 182, 212, 0.2);
+    color: #22d3ee;
+}
+body.dark-mode .badge-reit {
+    background-color: rgba(180, 83, 9, 0.2);
+    color: #f59e0b;
+}
+body.dark-mode .badge-crypto {
+    background-color: rgba(236, 72, 153, 0.2);
+    color: #f472b6;
+}
+body.dark-mode .badge-commodity {
+    background-color: rgba(234, 179, 8, 0.2);
+    color: #fde047;
+}
+body.dark-mode .badge-p2p {
+    background-color: rgba(4, 120, 87, 0.2);
+    color: #34d399;
+}
+body.dark-mode .badge-nps {
+    background-color: rgba(234, 88, 12, 0.2);
+    color: #ff7a00;
+}
+body.dark-mode .badge-ipo {
+    background-color: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+}
+body.dark-mode .badge-fd {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+body.dark-mode .badge-cash {
+    background-color: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+}
+body.dark-mode .badge-emergency {
+    background-color: rgba(234, 88, 12, 0.2);
+    color: #ff7a00;
+}
+body.dark-mode .badge-insurance {
+    background-color: rgba(20, 184, 166, 0.2);
+    color: #2dd4bf;
+}
+body.dark-mode .badge-other {
+    background-color: rgba(75, 85, 99, 0.2);
+    color: #9ca3af;
+}
